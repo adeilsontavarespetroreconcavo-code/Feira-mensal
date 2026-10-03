@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista da Feira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board: #263129;
+    --board-alt: #2c3a30;
+    --chalk: #f2efe4;
+    --chalk-dim: #b9c2b6;
+    --tomato: #d1483a;
+    --lime: #9db94a;
+    --corn: #e3a940;
+    --plum: #8e6bb0;
+    --sky: #5b93a8;
+    --paper: #f7f2e6;
+    --paper-shadow: rgba(0,0,0,.18);
+    --radius: 10px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,.03), transparent 60%),
+      var(--board);
+    font-family:'Work Sans', sans-serif;
+    color: var(--chalk);
+    padding: 32px 16px 80px;
+  }
+
+  .wrap{ max-width: 640px; margin: 0 auto; }
+
+  /* ---------- HEADER ---------- */
+  header{
+    text-align:center;
+    padding: 22px 12px 28px;
+    position: relative;
+  }
+  header::after{
+    content:"";
+    display:block;
+    width: 120px;
+    height: 3px;
+    margin: 14px auto 0;
+    background: var(--chalk-dim);
+    opacity:.4;
+    border-radius: 3px;
+    filter: blur(.3px);
+  }
+  header h1{
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    font-size: 2.6rem;
+    margin: 0;
+    letter-spacing: .5px;
+    text-shadow: 0 0 1px rgba(242,239,228,.35);
+    transform: rotate(-1deg);
+  }
+  header p{
+    font-family:'Kalam', cursive;
+    color: var(--chalk-dim);
+    font-size: 1.05rem;
+    margin: 6px 0 0;
+    transform: rotate(-0.5deg);
+  }
+
+  /* ---------- FORM ---------- */
+  .add-form{
+    background: var(--board-alt);
+    border: 1px solid rgba(242,239,228,.08);
+    border-radius: var(--radius);
+    padding: 14px;
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .add-form input[type="text"], 
+  .add-form input[type="number"], 
+  .add-form select{
+    font-family:'Work Sans', sans-serif;
+    font-size: .95rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(242,239,228,.15);
+    background: rgba(242,239,228,.06);
+    color: var(--chalk);
+    min-width: 0;
+  }
+  .add-form input::placeholder{ color: var(--chalk-dim); }
+  .add-form input:focus, .add-form select:focus{
+    outline: 2px solid var(--corn);
+    outline-offset: 1px;
+  }
+  .add-form .row{ display:flex; gap:10px; }
+  .add-form .row > *{ flex:1; }
+  .add-form .row .price-field{ flex: 0 0 130px; }
+  
+  /* Grupo para a quantidade e unidade separadas */
+  .qty-group {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+  }
+  .qty-group input[type="number"] {
+    width: 80px;
+    flex: 0 0 80px;
+  }
+  .qty-group select {
+    flex: 1;
+  }
+
+  .add-form select{ width: 100%; }
+  .add-form button{
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size: .95rem;
+    padding: 11px;
+    border-radius: 8px;
+    border: none;
+    background: var(--corn);
+    color: #2b2107;
+    cursor:pointer;
+    transition: transform .12s ease, background .15s ease;
+  }
+  .add-form button:hover{ background:#eab654; }
+  .add-form button:active{ transform: scale(.98); }
+
+  /* ---------- CATEGORY GROUPS ---------- */
+  .category{ margin-bottom: 26px; }
+  .category-title{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    font-family:'Kalam', cursive;
+    font-size: 1.25rem;
+    color: var(--chalk);
+    margin: 0 0 10px 4px;
+    transform: rotate(-0.3deg);
+  }
+  .category-title .dot{
+    width: 10px; height:10px; border-radius:50%;
+    display:inline-block;
+    box-shadow: 0 0 0 3px rgba(255,255,255,.06);
+  }
+  .category-title .count{
+    font-family:'Work Sans', sans-serif;
+    font-size: .75rem;
+    color: var(--chalk-dim);
+    font-weight: 500;
+  }
+
+  .items{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+
+  .item{
+    background: var(--paper);
+    color:#2b2620;
+    border-radius: 8px;
+    padding: 12px 12px 12px 14px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    box-shadow: 0 3px 0 var(--paper-shadow);
+    position: relative;
+    transform: rotate(-0.15deg);
+  }
+  .item:nth-child(even){ transform: rotate(0.2deg); }
+
+  .item .check{
+    flex-shrink:0;
+    width: 22px; height:22px;
+    border-radius: 50%;
+    border: 2px solid #b7ac91;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    background: transparent;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .item .check svg{ width:12px; height:12px; opacity:0; transition:opacity .1s ease; }
+  .item.done .check{ background: var(--lime); border-color: var(--lime); }
+  .item.done .check svg{ opacity:1; }
+
+  .item .info{ flex:1; min-width:0; }
+  .item .name{ font-weight:600; font-size:.98rem; }
+  .item .meta{ display:flex; flex-wrap:wrap; gap: 4px 8px; margin-top:2px; }
+  .item .qty, .item .local{ font-size:.8rem; color:#7a7160; }
+  .item .local::before{ content:"📍 "; }
+  .item.done .name, .item.done .qty, .item.done .local{ text-decoration: line-through; color:#a29d8c; }
+
+  .item .price-box {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .item .price-tag{
+    font-family:'Kalam', cursive;
+    font-weight:700;
+    font-size: 1.05rem;
+    color:#2b4a34;
+    background: rgba(157,185,74,.18);
+    border: 1px dashed rgba(43,74,52,.35);
+    padding: 3px 9px;
+    border-radius: 6px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+  .item .unit-calc {
+    font-size: 0.72rem;
+    color: #7a7160;
+    margin-top: 2px;
+    display: block;
+  }
+  .item.done .price-tag{ opacity:.5; text-decoration: line-through; }
+  .item.done .unit-calc{ opacity:.5; text-decoration: line-through; }
+
+  .item .del{
+    flex-shrink:0;
+    background:none; border:none; cursor:pointer;
+    color:#b7ac91; font-size:1.1rem; line-height:1;
+    padding: 4px 6px;
+    border-radius:6px;
+  }
+  .item .del:hover{ color: var(--tomato); background: rgba(209,72,58,.08); }
+
+  .empty-msg{
+    font-family:'Kalam', cursive;
+    text-align:center;
+    color: var(--chalk-dim);
+    padding: 30px 10px;
+    font-size: 1.1rem;
+  }
+
+  /* ---------- FOOTER / RESUMO ---------- */
+  .summary{
+    position: sticky;
+    bottom: 14px;
+    margin-top: 24px;
+    background: var(--board-alt);
+    border: 1px solid rgba(242,239,228,.1);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: .85rem;
+    color: var(--chalk-dim);
+    backdrop-filter: blur(4px);
+  }
+  .summary strong{ color: var(--chalk); }
+  .summary .totals{ display:flex; flex-direction:column; gap:2px; }
+  .summary .totals .grand{ font-size: 1rem; }
+  .summary .actions{ display:flex; gap:6px; flex-wrap: wrap; }
+  .summary button{
+    font-family:'Work Sans', sans-serif;
+    font-size: .78rem;
+    font-weight:500;
+    background: transparent;
+    border: 1px solid rgba(242,239,228,.2);
+    color: var(--chalk-dim);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor:pointer;
+  }
+  .summary button:hover{ color: var(--chalk); border-color: rgba(242,239,228,.4); }
+  .summary button.btn-restore{
+    border-color: rgba(227,169,64,.4);
+    color: var(--corn);
+  }
+  .summary button.btn-restore:hover{
+    background: rgba(227,169,64,.1);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; }
+  }
+
+  :focus-visible{ outline: 2px solid var(--corn); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-container">
+      <!-- Imagem da logo local presente na pasta -->
+      <img src="logo.jpg" alt="Logo Feira Mensal" class="app-logo">
+    </div>
+    <h1>Feira Mensal</h1>
+    <p>o que não pode faltar no mês</p>
+  </header>
+
+  <form class="add-form" id="form">
+    <div class="row">
+      <input type="text" id="itemName" placeholder="Ex: tomate, banana, arroz…" autocomplete="off" required>
+    </div>
+    <div class="row">
+      <!-- Quantidade numérica + Unidade de medida -->
+      <div class="qty-group">
+        <input type="number" id="itemQtyNum" placeholder="Qtd" value="1" min="0.001" step="any" aria-label="Quantidade numérica">
+        <select id="itemUnit" aria-label="Unidade de medida">
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="pct">pct</option>
+          <option value="un">un</option>
+          <option value="dz">dz</option>
+          <option value="cx">cx</option>
+          <option value="l">l</option>
+        </select>
+      </div>
+
+      <!-- Categoria -->
+      <select id="itemCat" aria-label="Categoria">
+        <option value="hortifruti">🥬 Hortifruti</option>
+        <option value="acougue">🥩 Açougue</option>
+        <option value="padaria">🍞 Padaria</option>
+        <option value="mercearia">🧂 Mercearia</option>
+        <option value="limpeza">🧼 Limpeza</option>
+        <option value="outros">🛒 Outros</option>
+      </select>
+    </div>
+    <div class="row">
+      <input type="text" id="itemLocal" placeholder="Local (ex: banca do Seu Zé)" autocomplete="off">
+      <input type="number" id="itemPreco" class="price-field" placeholder="Preço Unit. R$" step="0.01" min="0" inputmode="decimal">
+    </div>
+    <button type="submit">+ Adicionar à lista</button>
+  </form>
+
+  <div id="lists"></div>
+
+  <div class="summary">
+    <div class="totals">
+      <div id="summaryText">Sua lista está vazia.</div>
+      <div class="grand" id="grandTotal"></div>
+    </div>
+    <div class="actions">
+      <button type="button" id="restoreLast" class="btn-restore">↩ Puxar lista anterior</button>
+      <button type="button" id="clearDone">Limpar comprados</button>
+      <button type="button" id="clearAll">Limpar tudo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const CATS = {
+    hortifruti: { label: "Hortifruti", icon: "🥬", color: "var(--lime)" },
+    acougue:    { label: "Açougue",    icon: "🥩", color: "var(--tomato)" },
+    padaria:    { label: "Padaria",    icon: "🍞", color: "var(--corn)" },
+    mercearia:  { label: "Mercearia",  icon: "🧂", color: "var(--sky)" },
+    limpeza:    { label: "Limpeza",    icon: "🧼", color: "var(--plum)" },
+    outros:     { label: "Outros",     icon: "🛒", color: "var(--chalk-dim)" },
+  };
+
+  const defaultItems = [
+    { id: crypto.randomUUID(), name: "Tomate", qtyNum: 0.5, unit: "kg", cat: "hortifruti", local: "Banca do Seu Zé", precoUnit: 8.0, done: false },
+    { id: crypto.randomUUID(), name: "Pão francês", qtyNum: 1, unit: "pct", cat: "padaria", local: "Padaria Central", precoUnit: 9.9, done: false },
+    { id: crypto.randomUUID(), name: "Arroz", qtyNum: 3, unit: "pct", cat: "mercearia", local: "Mercadinho da esquina", precoUnit: 8.3, done: true },
+  ];
+
+  let items = JSON.parse(localStorage.getItem('listaFeira_items')) || defaultItems;
+  let lastItems = JSON.parse(localStorage.getItem('listaFeira_lastItems')) || [];
+
+  const listsEl = document.getElementById('lists');
+  const summaryText = document.getElementById('summaryText');
+  const grandTotal = document.getElementById('grandTotal');
+  const form = document.getElementById('form');
+
+  function saveData() {
+    localStorage.setItem('listaFeira_items', JSON.stringify(items));
+    localStorage.setItem('listaFeira_lastItems', JSON.stringify(lastItems));
+  }
+
+  function formatBRL(v){
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  // Calcula o valor total do item com base na quantidade e preço unitário
+  function calcTotalItem(item) {
+    if (item.precoUnit == null || isNaN(item.precoUnit)) return null;
+    let fator = item.qtyNum;
+    
+    // Se a unidade for gramas (g), converte para quilos (/1000) caso o preço seja por kg
+    if (item.unit === 'g') {
+      fator = item.qtyNum / 1000;
+    }
+    return fator * item.precoUnit;
+  }
+
+  function render(){
+    listsEl.innerHTML = '';
+
+    if(items.length === 0){
+      listsEl.innerHTML = `<p class="empty-msg">A feira te espera 🧺<br>adicione o primeiro item acima.</p>`;
+    } else {
+      Object.keys(CATS).forEach(catKey => {
+        const catItems = items.filter(i => i.cat === catKey);
+        if(catItems.length === 0) return;
+
+        const cat = CATS[catKey];
+        const group = document.createElement('div');
+        group.className = 'category';
+
+        const doneCount = catItems.filter(i => i.done).length;
+
+        group.innerHTML = `
+          <div class="category-title">
+            <span class="dot" style="background:${cat.color}"></span>
+            ${cat.icon} ${cat.label}
+            <span class="count">${doneCount}/${catItems.length}</span>
+          </div>
+          <ul class="items"></ul>
+        `;
+
+        const ul = group.querySelector('.items');
+        catItems.forEach(item => {
+          const totalCalculado = calcTotalItem(item);
+          const unitLabel = item.unit === 'g' ? 'kg' : item.unit; // mostra base R$/kg para gramas
+
+          const li = document.createElement('li');
+          li.className = 'item' + (item.done ? ' done' : '');
+          li.innerHTML = `
+            <button class="check" aria-label="Marcar ${item.name} como comprado" data-id="${item.id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2b3b20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </button>
+            <div class="info">
+              <div class="name">${escapeHtml(item.name)}</div>
+              <div class="meta">
+                <span class="qty">${item.qtyNum} ${item.unit}</span>
+                ${item.local ? `<span class="local">${escapeHtml(item.local)}</span>` : ''}
+              </div>
+            </div>
+            ${totalCalculado != null ? `
+              <div class="price-box">
+                <div class="price-tag">${formatBRL(totalCalculado)}</div>
+                <span class="unit-calc">${item.qtyNum}${item.unit} x ${formatBRL(item.precoUnit)}/${unitLabel}</span>
+              </div>
+            ` : ''}
+            <button class="del" aria-label="Remover ${item.name}" data-id="${item.id}">✕</button>
+          `;
+          ul.appendChild(li);
+        });
+
+        listsEl.appendChild(group);
+      });
+    }
+
+    const total = items.length;
+    const done = items.filter(i => i.done).length;
+    summaryText.innerHTML = total === 0
+      ? 'Sua lista está vazia.'
+      : `<strong>${done}</strong> de <strong>${total}</strong> comprados`;
+
+    const subtotal = items.reduce((sum, i) => sum + (calcTotalItem(i) || 0), 0);
+    grandTotal.innerHTML = `Total: <strong>${formatBRL(subtotal)}</strong>`;
+
+    saveData();
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const nameInput = document.getElementById('itemName');
+    const qtyNumInput = document.getElementById('itemQtyNum');
+    const unitInput = document.getElementById('itemUnit');
+    const catInput = document.getElementById('itemCat');
+    const localInput = document.getElementById('itemLocal');
+    const precoInput = document.getElementById('itemPreco');
+
+    const name = nameInput.value.trim();
+    if(!name) return;
+
+    const qtyNum = parseFloat(qtyNumInput.value) || 1;
+    const precoUnit = precoInput.value === '' ? null : Number(precoInput.value);
+
+    items.push({
+      id: crypto.randomUUID(),
+      name,
+      qtyNum,
+      unit: unitInput.value,
+      cat: catInput.value,
+      local: localInput.value.trim(),
+      precoUnit,
+      done: false
+    });
+
+    nameInput.value = '';
+    qtyNumInput.value = '1';
+    localInput.value = '';
+    precoInput.value = '';
+    nameInput.focus();
+    render();
+  });
+
+  listsEl.addEventListener('click', e => {
+    const checkBtn = e.target.closest('.check');
+    const delBtn = e.target.closest('.del');
+
+    if(checkBtn){
+      const id = checkBtn.dataset.id;
+      const item = items.find(i => i.id === id);
+      if(item) item.done = !item.done;
+      render();
+    }
+
+    if(delBtn){
+      const id = delBtn.dataset.id;
+      items = items.filter(i => i.id !== id);
+      render();
+    }
+  });
+
+  document.getElementById('clearDone').addEventListener('click', () => {
+    if(items.some(i => i.done)) {
+      lastItems = [...items];
+    }
+    items = items.filter(i => !i.done);
+    render();
+  });
+
+  document.getElementById('clearAll').addEventListener('click', () => {
+    if(items.length && !confirm('Remover todos os itens da lista?')) return;
+    if(items.length) {
+      lastItems = [...items];
+    }
+    items = [];
+    render();
+  });
+
+  document.getElementById('restoreLast').addEventListener('click', () => {
+    if(!lastItems || lastItems.length === 0){
+      alert('Nenhuma lista anterior encontrada para puxar!');
+      return;
+    }
+    if(items.length > 0 && !confirm('Isso vai substituir sua lista atual pela lista anterior. Deseja continuar?')) return;
+    
+    items = lastItems.map(item => ({ ...item, done: false }));
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
